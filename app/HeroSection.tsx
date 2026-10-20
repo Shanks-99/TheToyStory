@@ -43,6 +43,7 @@ export default function HeroSection({
         ref={desktopVideoRef}
         className="toy-hero__video toy-hero__video--desktop"
         autoPlay
+        muted
         playsInline
         loop={false}
         preload="auto"
