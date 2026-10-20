@@ -1,0 +1,606 @@
+/* ═══════════════════════════════════════════════
+   HERO SECTION — Three-phase animated hero
+   Phase 1 (intro):   Dark overlay + centred text
+   Phase 2 (playing): Overlay fades, video visible
+   Phase 3 (ended):   Overlay returns + display title
+   ═══════════════════════════════════════════════ */
+
+/* Display font for the final "sign" title */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap');
+
+/* ── Base ── */
+
+.toy-hero {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 100svh;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #0a0a0a;
+  color: #fff;
+  font-family: inherit;
+}
+
+.toy-hero *,
+.toy-hero *::before,
+.toy-hero *::after {
+  box-sizing: border-box;
+}
+
+/* ── Video ── */
+
+.toy-hero__video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background: #0a0a0a;
+}
+
+.toy-hero__video--desktop {
+  display: block;
+}
+
+.toy-hero__video--mobile {
+  display: none;
+}
+
+/* ── Dynamic overlay scrim ── */
+
+.toy-hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.12);
+  transition: background 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Phase 2 — keep light */
+.toy-hero--playing .toy-hero__scrim {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* Phase 3 — darken again for final title */
+.toy-hero--ended .toy-hero__scrim {
+  background: rgba(0, 0, 0, 0.62);
+}
+
+/* Persistent top gradient so the nav is always readable */
+
+.toy-hero__top-grad {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: 130px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, transparent 100%);
+}
+
+/* ═══════════════════════════════════════════════
+   NAVIGATION — transparent bar
+   ═══════════════════════════════════════════════ */
+
+.toy-hero__header {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px clamp(28px, 5vw, 64px);
+  background: transparent;
+}
+
+/* Brand */
+
+.toy-hero__brand {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.toy-hero__brand-icon {
+  display: block;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* Nav links */
+
+.toy-hero__nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(22px, 3vw, 40px);
+}
+
+.toy-hero__nav a {
+  position: relative;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 200ms ease;
+}
+
+.toy-hero__nav a:hover {
+  color: #fff;
+}
+
+.toy-hero__nav a::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #ffd13b;
+  transition: width 250ms ease;
+}
+
+.toy-hero__nav a:hover::after {
+  width: 100%;
+}
+
+/* Bag button */
+
+.toy-hero__bag {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 20px;
+  border: 0;
+  border-radius: 4px;
+  background: #ffd13b;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.toy-hero__bag:hover {
+  transform: translateY(-2px);
+  background: #ffe566;
+  box-shadow: 0 4px 16px rgba(255, 209, 59, 0.35);
+}
+
+/* Mobile toggle (hidden on desktop) */
+
+.toy-hero__menu-button,
+.toy-hero__mobile-nav {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════
+   PHASE 1 — INTRO TEXT (centered, fades after 3 s)
+   ═══════════════════════════════════════════════ */
+
+
+
+/* ═══════════════════════════════════════════════
+   PHASE 3 — FINAL TITLE (centred, appears when
+   the video ends, styled like a dramatic sign)
+   ═══════════════════════════════════════════════ */
+
+.toy-hero__final {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 90px 24px 30px;
+  box-sizing: border-box;
+  opacity: 0;
+  transform: scale(0.95) translateY(12px);
+  transition:
+    opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.toy-hero--ended .toy-hero__final {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+/* The sign-style display title */
+
+.toy-hero__final-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  font-family: 'Fredoka', var(--font-geist-sans), sans-serif;
+  font-weight: 700;
+  line-height: 0.95;
+  color: #fff;
+}
+
+.toy-hero__final-the {
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 2px;
+}
+
+.toy-hero__final-toy {
+  font-size: clamp(3rem, 6.5vw, 6rem);
+  text-transform: uppercase;
+  color: #ffd13b;
+  text-shadow:
+    0 2px 0 rgba(210, 165, 0, 0.9),
+    0 3px 0 rgba(180, 140, 0, 0.7),
+    0 5px 0 rgba(150, 115, 0, 0.45),
+    0 7px 0 rgba(120, 90, 0, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.45);
+  letter-spacing: 0.03em;
+  line-height: 0.92;
+}
+
+.toy-hero__final-story {
+  font-size: clamp(3rem, 6.5vw, 6rem);
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 2px 0 rgba(180, 180, 180, 0.4),
+    0 3px 0 rgba(140, 140, 140, 0.25),
+    0 5px 0 rgba(100, 100, 100, 0.15),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.03em;
+  line-height: 0.92;
+  margin-top: 2px;
+}
+
+.toy-hero__final-tagline {
+  margin: 16px 0 0;
+  font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* CTA buttons */
+
+.toy-hero__final-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.toy-hero__primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 13px 30px;
+  border: 0;
+  border-radius: 3px;
+  background: #ffd13b;
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    transform 200ms ease,
+    background 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.toy-hero__primary:hover {
+  transform: translateY(-2px);
+  background: #ffe566;
+  box-shadow: 0 6px 22px rgba(255, 209, 59, 0.3);
+}
+
+.toy-hero__secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 13px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  background: transparent;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    border-color 200ms ease,
+    background 200ms ease,
+    transform 200ms ease;
+}
+
+.toy-hero__secondary:hover {
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Bottom glow */
+
+.toy-hero__bottom-glow {
+  position: absolute;
+  right: -10%;
+  bottom: -35%;
+  z-index: -1;
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: rgba(255, 209, 59, 0.06);
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — Tablet
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 1050px) {
+  .toy-hero__header {
+    gap: 15px;
+    padding: 16px clamp(20px, 4vw, 40px);
+  }
+
+  .toy-hero__brand {
+    font-size: 0.88rem;
+  }
+
+  .toy-hero__nav {
+    gap: 18px;
+  }
+
+  .toy-hero__nav a {
+    font-size: 0.74rem;
+  }
+
+  .toy-hero__final-toy,
+  .toy-hero__final-story {
+    font-size: clamp(4rem, 12vw, 8rem);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — Mobile
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 760px) {
+  .toy-hero {
+    min-height: 100svh;
+  }
+
+  .toy-hero__video--desktop {
+    display: none;
+  }
+
+  .toy-hero__video--mobile {
+    display: block;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .toy-hero__top-grad {
+    height: 100px;
+  }
+
+  .toy-hero__header {
+    padding: 14px 18px;
+    gap: 8px;
+  }
+
+  .toy-hero__brand {
+    gap: 8px;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+  }
+
+  .toy-hero__brand-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+
+  .toy-hero__nav {
+    display: none;
+  }
+
+  .toy-hero__bag {
+    min-height: 36px;
+    padding: 7px 14px;
+    font-size: 0.7rem;
+  }
+
+  .toy-hero__menu-button {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .toy-hero__mobile-nav {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 18px;
+    left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: rgba(10, 10, 10, 0.92);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+  }
+
+  .toy-hero__mobile-nav a,
+  .toy-hero__mobile-nav button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 13px 14px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.88);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .toy-hero__mobile-nav a:hover,
+  .toy-hero__mobile-nav button:hover {
+    background: rgba(255, 209, 59, 0.1);
+    color: #ffd13b;
+  }
+
+  /* Intro */
+
+  .toy-hero__intro-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    margin-bottom: 14px;
+  }
+
+  .toy-hero__intro-title {
+    font-size: clamp(3.5rem, 14vw, 6rem);
+  }
+
+  /* Final */
+
+  .toy-hero__final {
+    padding: 80px 16px 20px;
+  }
+
+  .toy-hero__final-the {
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  }
+
+  .toy-hero__final-toy,
+  .toy-hero__final-story {
+    font-size: clamp(2.4rem, 8.5vw, 3.8rem);
+  }
+
+  .toy-hero__final-story {
+    margin-top: 0;
+  }
+
+  .toy-hero__final-tagline {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    margin-top: 14px;
+  }
+
+  .toy-hero__final-actions {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .toy-hero__primary,
+  .toy-hero__secondary {
+    min-height: 44px;
+    padding: 11px 24px;
+    font-size: 0.74rem;
+    width: auto;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — Very small
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 380px) {
+  .toy-hero__brand {
+    font-size: 0.72rem;
+  }
+
+  .toy-hero__brand-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .toy-hero__bag {
+    padding: 6px 10px;
+    font-size: 0.65rem;
+  }
+
+  .toy-hero__intro-title {
+    font-size: 2.5rem;
+  }
+
+  .toy-hero__final-toy,
+  .toy-hero__final-story {
+    font-size: 2.2rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .toy-hero *,
+  .toy-hero *::before,
+  .toy-hero *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
