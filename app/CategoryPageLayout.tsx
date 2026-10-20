@@ -186,66 +186,80 @@ export default function CategoryPageLayout({
 
         <div className="cat-grid">
           {products.map((p) => (
-            <article className="cat-card" key={p.id}>
-              <div
-                className="cat-card__art"
-                style={{ "--card-color": p.color } as React.CSSProperties}
-              >
-                <span className="cat-card__badge">
-                  {discount(p.originalPrice, p.price)}
-                </span>
-
-                <button
-                  className={`cat-card__fav ${favorites.includes(p.id) ? "is-fav" : ""}`}
-                  onClick={() => toggleFav(p.id)}
-                  aria-label={
-                    favorites.includes(p.id)
-                      ? "Remove from favorites"
-                      : "Add to favorites"
-                  }
+            <Link
+              href={`/product/${p.id}`}
+              key={p.id}
+              style={{ textDecoration: "none", color: "inherit", display: "block" }}
+            >
+              <article className="cat-card" style={{ cursor: "pointer" }}>
+                <div
+                  className="cat-card__art"
+                  style={{ "--card-color": p.color } as React.CSSProperties}
                 >
-                  {favorites.includes(p.id) ? "♥" : "♡"}
-                </button>
-
-                <span className="cat-card__emoji" aria-hidden="true">
-                  {p.emoji}
-                </span>
-                <span className="cat-card__sparkle">✦</span>
-              </div>
-
-              <div className="cat-card__info">
-                <span className="cat-card__category">{p.subcategory}</span>
-                <h3 className="cat-card__name">{p.name}</h3>
-                <p className="cat-card__desc">{p.description}</p>
-
-                <div className="cat-card__rating">
-                  <span className="cat-card__stars">{stars(p.rating)}</span>
-                  <span className="cat-card__rating-text">
-                    {p.rating} ({p.reviews})
+                  <span className="cat-card__badge">
+                    {discount(p.originalPrice, p.price)}
                   </span>
-                </div>
-
-                <div className="cat-card__bottom">
-                  <div className="cat-card__prices">
-                    <strong className="cat-card__price">
-                      {money(p.price)}
-                    </strong>
-                    <span className="cat-card__original">
-                      {money(p.originalPrice)}
-                    </span>
-                    <span className="cat-card__age">Ages {p.ages}</span>
-                  </div>
 
                   <button
-                    className="cat-card__btn"
-                    onClick={() => addToCart(p.id)}
-                    aria-label={`Add ${p.name} to bag`}
+                    className={`cat-card__fav ${favorites.includes(p.id) ? "is-fav" : ""}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFav(p.id);
+                    }}
+                    aria-label={
+                      favorites.includes(p.id)
+                        ? "Remove from favorites"
+                        : "Add to favorites"
+                    }
                   >
-                    <span>+</span> Add
+                    {favorites.includes(p.id) ? "♥" : "♡"}
                   </button>
+
+                  <span className="cat-card__emoji" aria-hidden="true">
+                    {p.emoji}
+                  </span>
+                  <span className="cat-card__sparkle">✦</span>
                 </div>
-              </div>
-            </article>
+
+                <div className="cat-card__info">
+                  <span className="cat-card__category">{p.subcategory}</span>
+                  <h3 className="cat-card__name">{p.name}</h3>
+                  <p className="cat-card__desc">{p.description}</p>
+
+                  <div className="cat-card__rating">
+                    <span className="cat-card__stars">{stars(p.rating)}</span>
+                    <span className="cat-card__rating-text">
+                      {p.rating} ({p.reviews})
+                    </span>
+                  </div>
+
+                  <div className="cat-card__bottom">
+                    <div className="cat-card__prices">
+                      <strong className="cat-card__price">
+                        {money(p.price)}
+                      </strong>
+                      <span className="cat-card__original">
+                        {money(p.originalPrice)}
+                      </span>
+                      <span className="cat-card__age">Ages {p.ages}</span>
+                    </div>
+
+                    <button
+                      className="cat-card__btn"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addToCart(p.id);
+                      }}
+                      aria-label={`Add ${p.name} to bag`}
+                    >
+                      <span>+</span> Add
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </Link>
           ))}
         </div>
 

@@ -537,11 +537,12 @@ export default function Home() {
 
         <div className="product-grid">
           {paginatedProducts.map((product) => (
-            <article className="product-card" key={product.id}>
-              <Link
-                href={`/product/${product.id}`}
-                style={{ textDecoration: "none", display: "block" }}
-              >
+            <Link
+              href={`/product/${product.id}`}
+              key={product.id}
+              style={{ textDecoration: "none", color: "inherit", display: "block" }}
+            >
+              <article className="product-card" style={{ cursor: "pointer" }}>
                 <div className="product-art" style={{ backgroundColor: product.color }}>
                   <span className="product-label">LITTLE FAVORITE</span>
                   <button
@@ -560,32 +561,31 @@ export default function Home() {
                   <span className="product-emoji" aria-hidden="true">{product.emoji}</span>
                   <span className="product-art-sparkle">✦</span>
                 </div>
-              </Link>
 
-              <div className="product-info">
-                <span className="product-category">{product.category}</span>
-                <Link
-                  href={`/product/${product.id}`}
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
+                <div className="product-info">
+                  <span className="product-category">{product.category}</span>
                   <h3>{product.name}</h3>
-                </Link>
-                <p>{product.description}</p>
-                <div className="product-bottom">
-                  <div>
-                    <strong className="product-price">{money(product.price)}</strong>
-                    <span className="product-age">Ages {product.ages.join(", ")}</span>
+                  <p>{product.description}</p>
+                  <div className="product-bottom">
+                    <div>
+                      <strong className="product-price">{money(product.price)}</strong>
+                      <span className="product-age">Ages {product.ages.join(", ")}</span>
+                    </div>
+                    <button
+                      className="product-button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addToCart(product.id);
+                      }}
+                      aria-label={`Add ${product.name} to bag`}
+                    >
+                      <span>+</span> Add
+                    </button>
                   </div>
-                  <button
-                    className="product-button"
-                    onClick={() => addToCart(product.id)}
-                    aria-label={`Add ${product.name} to bag`}
-                  >
-                    <span>+</span> Add
-                  </button>
                 </div>
-              </div>
-            </article>
+              </article>
+            </Link>
           ))}
 
           {filteredProducts.length === 0 && (
