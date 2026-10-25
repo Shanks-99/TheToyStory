@@ -7,7 +7,7 @@ import "./category-page.css";
 /* ── Types ── */
 
 export type CatProduct = {
-  id: number;
+  id: number | string;
   name: string;
   emoji: string;
   color: string;
@@ -18,6 +18,7 @@ export type CatProduct = {
   description: string;
   rating: number;
   reviews: number;
+  imageUrl?: string;
 };
 
 export type CatTheme = {
@@ -64,11 +65,59 @@ const money = (amount: number) =>
 const discount = (original: number, sale: number) =>
   `${Math.round(((original - sale) / original) * 100)}% OFF`;
 
-const stars = (rating: number) => {
-  const full = Math.floor(rating);
-  const half = rating % 1 >= 0.5 ? 1 : 0;
-  return "★".repeat(full) + (half ? "½" : "") + "☆".repeat(5 - full - half);
-};
+function renderStars(rating: number) {
+  return (
+    <span className="cat-card__stars-row" aria-label={`Rating: ${rating} out of 5`}>
+      {[1, 2, 3, 4, 5].map((star) => {
+        const fillPercent = Math.max(0, Math.min(1, rating - star + 1));
+        const gradId = `star-grad-${star}-${String(rating).replace(".", "_")}`;
+        return (
+          <svg
+            key={star}
+            className="cat-card__star-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id={gradId}>
+                <stop offset={`${fillPercent * 100}%`} stopColor="#f59e0b" />
+                <stop offset={`${fillPercent * 100}%`} stopColor="#e2e8f0" />
+              </linearGradient>
+            </defs>
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+              fill={fillPercent >= 0.99 ? "#f59e0b" : fillPercent <= 0.01 ? "#e2e8f0" : `url(#${gradId})`}
+              stroke="#d97706"
+              strokeWidth="0.5"
+            />
+          </svg>
+        );
+      })}
+    </span>
+  );
+}
+
+function formatAgeRange(ages: string | string[]): string {
+  if (!ages) return "All Ages";
+  const str = Array.isArray(ages) ? ages.join(", ") : String(ages);
+  const numbers = str.match(/\d+/g)?.map(Number);
+  if (numbers && numbers.length > 0) {
+    const min = Math.min(...numbers);
+    const max = Math.max(...numbers);
+    if (min === max) return `Age ${min}+`;
+    return `Ages ${min}–${max}`;
+  }
+  return `Ages ${str}`;
+}
+
+function cleanShortDescription(name: string, desc: string): string {
+  if (!desc) return "";
+  let clean = desc.trim();
+  if (clean.toLowerCase().startsWith(name.toLowerCase())) {
+    clean = clean.slice(name.length).replace(/^[\s.:,-]+/, "");
+  }
+  return clean;
+}
 
 /* ── Component ── */
 
@@ -81,17 +130,26 @@ export default function CategoryPageLayout({
   products,
   theme,
 }: CategoryPageProps) {
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [cart, setCart] = useState<Record<number, number>>({});
+  const [favorites, setFavorites] = useState<(number | string)[]>([]);
+  const [cart, setCart] = useState<Record<number | string, number>>({});
+  const [addedIds, setAddedIds] = useState<Record<number | string, boolean>>({});
 
-  function toggleFav(id: number) {
+  function toggleFav(id: number | string) {
     setFavorites((c) =>
       c.includes(id) ? c.filter((i) => i !== id) : [...c, id]
     );
   }
 
-  function addToCart(id: number) {
+  function addToCart(id: number | string) {
     setCart((c) => ({ ...c, [id]: (c[id] || 0) + 1 }));
+  }
+
+  function handleAddToCart(id: number | string) {
+    addToCart(id);
+    setAddedIds((prev) => ({ ...prev, [id]: true }));
+    setTimeout(() => {
+      setAddedIds((prev) => ({ ...prev, [id]: false }));
+    }, 1400);
   }
 
   const style = {
@@ -184,88 +242,149 @@ export default function CategoryPageLayout({
           </span>
         </div>
 
-        <div className="cat-grid">
-          {products.map((p) => (
+        {products.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "70px 20px",
+              background: "#ffffff",
+              borderRadius: "24px",
+              border: "1.5px dashed var(--cat-badge-border, #e2e8f0)",
+              maxWidth: "540px",
+              margin: "20px auto 40px",
+            }}
+          >
+            <div style={{ fontSize: "52px", marginBottom: "16px" }}>🎁</div>
+            <h3 style={{ fontSize: "22px", fontWeight: 900, color: "var(--toy-ink, #0f172a)", marginBottom: "8px" }}>
+              New Toys Coming Soon!
+            </h3>
+            <p style={{ fontSize: "14px", color: "var(--toy-muted, #64748b)", lineHeight: 1.6, marginBottom: "24px" }}>
+              We are actively handpicking delightful new treasures for this collection. Explore our other collections or check back shortly!
+            </p>
             <Link
-              href={`/product/${p.id}`}
-              key={p.id}
-              style={{ textDecoration: "none", color: "inherit", display: "block" }}
+              href="/#shop"
+              style={{
+                display: "inline-block",
+                padding: "12px 28px",
+                background: "var(--cat-primary, #2563eb)",
+                color: "#ffffff",
+                borderRadius: "999px",
+                fontWeight: 800,
+                fontSize: "14px",
+                textDecoration: "none",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
+              }}
             >
-              <article className="cat-card" style={{ cursor: "pointer" }}>
-                <div
-                  className="cat-card__art"
-                  style={{ "--card-color": p.color } as React.CSSProperties}
-                >
-                  <span className="cat-card__badge">
-                    {discount(p.originalPrice, p.price)}
-                  </span>
-
-                  <button
-                    className={`cat-card__fav ${favorites.includes(p.id) ? "is-fav" : ""}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      toggleFav(p.id);
-                    }}
-                    aria-label={
-                      favorites.includes(p.id)
-                        ? "Remove from favorites"
-                        : "Add to favorites"
-                    }
+              Explore All Toys
+            </Link>
+          </div>
+        ) : (
+          <div className="cat-grid">
+            {products.map((p) => (
+              <Link
+                href={`/product/${p.id}`}
+                key={p.id}
+                style={{ textDecoration: "none", color: "inherit", display: "block" }}
+              >
+                <article className="cat-card" style={{ cursor: "pointer" }}>
+                  <div
+                    className="cat-card__art"
+                    style={{ "--card-color": p.color } as React.CSSProperties}
                   >
-                    {favorites.includes(p.id) ? "♥" : "♡"}
-                  </button>
-
-                  <span className="cat-card__emoji" aria-hidden="true">
-                    {p.emoji}
-                  </span>
-                  <span className="cat-card__sparkle">✦</span>
-                </div>
-
-                <div className="cat-card__info">
-                  <span className="cat-card__category">{p.subcategory}</span>
-                  <h3 className="cat-card__name">{p.name}</h3>
-                  <p className="cat-card__desc">{p.description}</p>
-
-                  <div className="cat-card__rating">
-                    <span className="cat-card__stars">{stars(p.rating)}</span>
-                    <span className="cat-card__rating-text">
-                      {p.rating} ({p.reviews})
+                    <span className="cat-card__badge">
+                      {discount(p.originalPrice, p.price)}
                     </span>
-                  </div>
-
-                  <div className="cat-card__bottom">
-                    <div className="cat-card__prices">
-                      <strong className="cat-card__price">
-                        {money(p.price)}
-                      </strong>
-                      <span className="cat-card__original">
-                        {money(p.originalPrice)}
-                      </span>
-                      <span className="cat-card__age">Ages {p.ages}</span>
-                    </div>
 
                     <button
-                      className="cat-card__btn"
+                      className={`cat-card__fav ${favorites.includes(p.id) ? "is-fav" : ""}`}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        addToCart(p.id);
+                        toggleFav(p.id);
                       }}
-                      aria-label={`Add ${p.name} to bag`}
+                      aria-label={
+                        favorites.includes(p.id)
+                          ? "Remove from favorites"
+                          : "Add to favorites"
+                      }
                     >
-                      <span>+</span> Add
+                      {favorites.includes(p.id) ? "♥" : "♡"}
                     </button>
-                  </div>
-                </div>
-              </article>
-            </Link>
-          ))}
-        </div>
 
-        <p className="cat-sample-notice">
-          Products and prices shown are samples for this website preview.
-        </p>
+                    {p.imageUrl && (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={p.imageUrl}
+                        alt={p.name}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          objectPosition: "center",
+                          display: "block",
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  <div className="cat-card__info">
+                    <span className="cat-card__category">{p.subcategory}</span>
+                    <h3 className="cat-card__name">{p.name}</h3>
+                    <p className="cat-card__desc">
+                      {cleanShortDescription(p.name, p.description)}
+                    </p>
+
+                    <div className="cat-card__rating">
+                      {renderStars(p.rating)}
+                      <strong className="cat-card__rating-val">{p.rating}</strong>
+                      <span className="cat-card__reviews-count">
+                        ({p.reviews} reviews)
+                      </span>
+                    </div>
+
+                    <div className="cat-card__bottom">
+                      <div className="cat-card__prices">
+                        <div className="cat-card__price-row">
+                          <strong className="cat-card__price">
+                            {money(p.price)}
+                          </strong>
+                          {p.originalPrice > p.price && (
+                            <span className="cat-card__original">
+                              {money(p.originalPrice)}
+                            </span>
+                          )}
+                        </div>
+                        <span className="cat-card__age-badge">
+                          {formatAgeRange(p.ages)}
+                        </span>
+                      </div>
+
+                      <button
+                        className={`cat-card__btn ${addedIds[p.id] ? "is-added" : ""}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleAddToCart(p.id);
+                        }}
+                        aria-label={`Add ${p.name} to bag`}
+                      >
+                        {addedIds[p.id] ? (
+                          <>
+                            <span className="cat-card__btn-icon">✓</span> Added!
+                          </>
+                        ) : (
+                          <>
+                            <span className="cat-card__btn-icon">+</span> Add
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── Footer ── */}

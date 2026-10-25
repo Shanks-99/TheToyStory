@@ -3,15 +3,16 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { getProductById, productsData } from "../data/products";
+import { getProductById } from "../data/products";
 import "./checkout.css";
 
 interface CheckoutItem {
-  id: number;
+  id: string | number;
   name: string;
   price: number;
   quantity: number;
   image: string;
+  color?: string;
 }
 
 const formatPrice = (amount: number) =>
@@ -62,6 +63,7 @@ function CheckoutContent() {
   useEffect(() => {
     const pId = searchParams.get("productId");
     const qty = parseInt(searchParams.get("qty") || "1", 10);
+    const pColor = searchParams.get("color");
 
     if (pId) {
       const p = getProductById(pId);
@@ -72,7 +74,8 @@ function CheckoutContent() {
             name: p.name,
             price: p.price,
             quantity: Math.max(1, qty),
-            image: p.images && p.images[0] ? p.images[0] : "/Cars.jpeg",
+            image: p.images && p.images[0] ? p.images[0] : "/logo.png",
+            color: pColor || undefined,
           },
         ]);
         setLoading(false);
@@ -95,17 +98,7 @@ function CheckoutContent() {
       console.error(e);
     }
 
-    // Default to the Freight Truck featured in user reference
-    const defaultProduct = productsData[0];
-    setItems([
-      {
-        id: defaultProduct.id,
-        name: defaultProduct.name,
-        price: defaultProduct.price,
-        quantity: 1,
-        image: defaultProduct.images[0] || "/images/truck/truck-1.jpg",
-      },
-    ]);
+    setItems([]);
     setLoading(false);
   }, [searchParams]);
 
@@ -530,6 +523,11 @@ function CheckoutContent() {
                   </div>
                   <div className="checkout-item-info">
                     <h4>{item.name}</h4>
+                    {item.color && (
+                      <span style={{ fontSize: "12px", color: "#64748b", display: "block", marginTop: "2px" }}>
+                        Color: <strong style={{ color: "#334155" }}>{item.color}</strong>
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="checkout-item-price">

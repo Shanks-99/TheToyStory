@@ -3,8 +3,10 @@
 import { use, useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getProductById, productsData } from "../../data/products";
+import { getProductById } from "../../data/products";
 import "./product-page.css";
+
+import { supabase } from "@/lib/supabase";
 
 const money = (amount: number) =>
   `Rs. ${Math.round(amount).toLocaleString("en-PK")}`;
@@ -19,11 +21,87 @@ function ProductDetailContent({
 }) {
   const router = useRouter();
   const resolvedParams = use(params);
-  const product = getProductById(resolvedParams.id) || productsData[0];
+  const initialProduct = getProductById(resolvedParams.id);
+  const [product, setProduct] = useState<any>(initialProduct || null);
+
+  // Dynamic Supabase load if product was created in Admin
+  useEffect(() => {
+    async function loadDynamicProduct() {
+      try {
+        const idOrSlug = resolvedParams.id;
+        const isUuid =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            idOrSlug
+          );
+
+        let query = supabase.from("products").select("*");
+        if (isUuid) {
+          query = query.eq("id", idOrSlug);
+        } else {
+          query = query.eq("slug", idOrSlug);
+        }
+
+        const { data } = await query.maybeSingle();
+        if (data) {
+          const imgs =
+            data.image_urls && data.image_urls.length > 0
+              ? data.image_urls
+              : ["/logo.png"];
+
+          setProduct({
+            id: data.id,
+            name: data.name,
+            emoji: "🧸",
+            color: "#fff4d4",
+            category: data.category,
+            ages: data.age_range
+              ? data.age_range.split(",").map((s: string) => s.trim())
+              : ["3-5", "6-8"],
+            price: Number(data.price),
+            originalPrice: data.compare_at_price
+              ? Number(data.compare_at_price)
+              : Number(data.price),
+            description: data.description || "",
+            images: imgs,
+            rating: 4.9,
+            reviewsCount: 14,
+            inStock: data.stock,
+            available_colors: data.available_colors || [],
+            features: [
+              "100% child-safe, non-toxic premium build quality.",
+              "Promotes hand-eye coordination and active problem-solving.",
+              "Smooth tactile feel and durable construction for daily play.",
+              "Backed by The Toy Story 7-day replacement guarantee.",
+            ],
+            specs: {
+              Product: data.name,
+              Category: data.category,
+              "Age Guidance": data.age_range || "Ages 3-8",
+              Inventory: `${data.stock} units in stock`,
+              Warranty: "7-Day Replacement Guarantee",
+            },
+          });
+
+          if (data.available_colors && data.available_colors.length > 0) {
+            setSelectedColor(data.available_colors[0]);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not query dynamic product:", err);
+      }
+    }
+
+    loadDynamicProduct();
+  }, [resolvedParams.id]);
 
   // State
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState<string>(
+    initialProduct?.available_colors && initialProduct.available_colors.length > 0
+      ? initialProduct.available_colors[0]
+      : ""
+  );
   const [isFavorite, setIsFavorite] = useState(false);
   const [giftReady, setGiftReady] = useState(false);
   const [giftNote, setGiftNote] = useState("");
@@ -33,15 +111,15 @@ function ProductDetailContent({
   const [cartCount, setCartCount] = useState(0);
 
   // Bundle selection state
-  const initialBundleChecked = product.bundle
-    ? product.bundle.items.reduce<Record<string, boolean>>((acc, item) => {
+  const initialBundleChecked: Record<string, boolean> = product?.bundle?.items
+    ? (product.bundle.items as any[]).reduce((acc: Record<string, boolean>, item: any) => {
         acc[item.id] = item.checked;
         return acc;
       }, {})
     : {};
   const [bundleChecked, setBundleChecked] = useState<Record<string, boolean>>(initialBundleChecked);
 
-  const images = product.images && product.images.length > 0 ? product.images : ["/Cars.jpeg"];
+  const images = product?.images && product.images.length > 0 ? product.images : ["/logo.png"];
   const currentImage = images[activeImageIdx] || images[0];
 
   // Scroll listener for sticky purchase bar
@@ -65,7 +143,8 @@ function ProductDetailContent({
 
   const handleAddToCart = () => {
     setCartCount((c) => c + quantity);
-    triggerToast(`Added ${quantity} × ${product.name} to your cart! 🛍️`);
+    const colorInfo = selectedColor ? ` (Color: ${selectedColor})` : "";
+    triggerToast(`Added ${quantity} × ${product.name}${colorInfo} to your cart! 🛍️`);
   };
 
   const handleBuyNow = () => {
@@ -76,14 +155,16 @@ function ProductDetailContent({
           name: product.name,
           price: product.price,
           quantity: quantity,
-          image: images[0] || "/Cars.jpeg",
+          image: images[0] || "/logo.png",
+          color: selectedColor || undefined,
         },
       ];
       localStorage.setItem("tts_checkout_cart", JSON.stringify(checkoutItems));
     } catch (e) {
       console.error(e);
     }
-    router.push(`/checkout?productId=${product.id}&qty=${quantity}`);
+    const colorParam = selectedColor ? `&color=${encodeURIComponent(selectedColor)}` : "";
+    router.push(`/checkout?productId=${product.id}&qty=${quantity}${colorParam}`);
   };
 
   const nextImage = () => {
@@ -95,17 +176,17 @@ function ProductDetailContent({
   };
 
   // Bundle calculations
-  const selectedBundleItems = product.bundle
-    ? product.bundle.items.filter((item) => bundleChecked[item.id])
+  const selectedBundleItems: any[] = product?.bundle?.items
+    ? (product.bundle.items as any[]).filter((item: any) => bundleChecked[item.id])
     : [];
 
   const bundleTotalOriginal =
-    product.originalPrice +
-    selectedBundleItems.reduce((acc, item) => acc + item.originalPrice, 0);
+    (product?.originalPrice || 0) +
+    selectedBundleItems.reduce((acc: number, item: any) => acc + (item.originalPrice || 0), 0);
 
   const bundleTotalCurrent =
-    product.price +
-    selectedBundleItems.reduce((acc, item) => acc + item.price, 0);
+    (product?.price || 0) +
+    selectedBundleItems.reduce((acc: number, item: any) => acc + (item.price || 0), 0);
 
   const bundleSavings = bundleTotalOriginal - bundleTotalCurrent;
 
@@ -114,6 +195,10 @@ function ProductDetailContent({
     setCartCount((c) => c + countToAdd);
     triggerToast(`Added full bundle (${countToAdd} items) to your cart! 🎁`);
   };
+
+  if (!product) {
+    return <ProductPageSkeleton />;
+  }
 
   return (
     <div className="pdp-page">
@@ -176,7 +261,7 @@ function ProductDetailContent({
             {/* Vertical / Horizontal Thumbnails */}
             {images.length > 1 && (
               <div className="pdp-thumbnails" role="tablist" aria-label="Product thumbnails">
-                {images.map((imgSrc, idx) => (
+                {images.map((imgSrc: string, idx: number) => (
                   <button
                     key={idx}
                     type="button"
@@ -324,6 +409,65 @@ function ProductDetailContent({
               )}
             </div>
 
+            {/* Color Selection Swatches */}
+            {product.available_colors && product.available_colors.length > 0 && (
+              <div className="pdp-colors-container" style={{ marginBottom: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
+                    Select Color: <span style={{ color: "#2563eb", fontWeight: 800 }}>{selectedColor || "None selected"}</span>
+                  </span>
+                  <span style={{ fontSize: "12px", color: "#64748b" }}>
+                    {product.available_colors.length} {product.available_colors.length === 1 ? "option" : "options"} available
+                  </span>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                  {product.available_colors.map((c: string) => {
+                    const isSelected = selectedColor === c;
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setSelectedColor(c)}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          padding: "8px 16px",
+                          borderRadius: "999px",
+                          border: isSelected ? "2px solid #2563eb" : "1.5px solid #cbd5e1",
+                          background: isSelected ? "#eff6ff" : "#ffffff",
+                          color: isSelected ? "#1d4ed8" : "#334155",
+                          fontWeight: 700,
+                          fontSize: "13px",
+                          cursor: "pointer",
+                          boxShadow: isSelected ? "0 2px 6px rgba(37, 99, 235, 0.2)" : "0 1px 2px rgba(0,0,0,0.04)",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "14px",
+                            height: "14px",
+                            borderRadius: "50%",
+                            border: "1px solid rgba(0,0,0,0.15)",
+                            backgroundColor: c.toLowerCase().includes("multi")
+                              ? "transparent"
+                              : c.toLowerCase(),
+                            backgroundImage: c.toLowerCase().includes("multi")
+                              ? "linear-gradient(135deg, #ef4444, #3b82f6, #10b981, #f59e0b)"
+                              : undefined,
+                            display: "inline-block",
+                          }}
+                        />
+                        <span>{c}</span>
+                        {isSelected && <span style={{ fontSize: "12px" }}>✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Quantity Stepper & Add to Cart */}
             <div className="pdp-actions-row">
               <div className="pdp-qty-stepper" aria-label="Quantity selector">
@@ -369,7 +513,9 @@ function ProductDetailContent({
               <span>💬 Prefer ordering directly on WhatsApp?</span>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(
-                  `Hi The Toy Story! I'd like to order: ${product.name} (${money(product.price)})`
+                  `Hi The Toy Story! I'd like to order: ${product.name}${
+                    selectedColor ? ` (Color: ${selectedColor})` : ""
+                  } (${money(product.price)})`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -462,7 +608,7 @@ function ProductDetailContent({
                 <span className="pdp-bundle-price-tag">{money(product.price)}</span>
               </label>
 
-              {product.bundle.items.map((item) => (
+              {product?.bundle?.items && (product.bundle.items as any[]).map((item: any) => (
                 <label key={item.id} className="pdp-bundle-item-label">
                   <input
                     type="checkbox"
@@ -561,10 +707,10 @@ function ProductDetailContent({
                 </p>
 
                 <h4 style={{ margin: "24px 0 10px", fontSize: "1.1rem", fontWeight: 800 }}>
-                  🚚 Key Highlights & Built-in Features
+                  ✨ Key Highlights & Built-in Features
                 </h4>
                 <ul className="pdp-features-list">
-                  {product.features.map((feat, idx) => (
+                  {product?.features && (product.features as any[]).map((feat: any, idx: number) => (
                     <li key={idx}>
                       <span className="pdp-feature-icon">✓</span>
                       <span>{feat}</span>
@@ -578,10 +724,10 @@ function ProductDetailContent({
               <div>
                 <table className="pdp-specs-table">
                   <tbody>
-                    {Object.entries(product.specs).map(([key, val]) => (
+                    {product?.specs && Object.entries(product.specs).map(([key, val]) => (
                       <tr key={key}>
                         <td>{key}</td>
-                        <td>{val}</td>
+                        <td>{String(val)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -613,7 +759,7 @@ function ProductDetailContent({
                       <span className="pdp-review-stars">★★★★★</span>
                     </div>
                     <p className="pdp-review-text">
-                      "My 7-year-old son has not put this truck down since it arrived! The smoke effect was such a surprise and completely mess-free. The remote controller works smoothly without lag. Very fast delivery too!"
+                      "My child absolutely loves this toy! The quality is premium and safely built. Very fast delivery and excellent customer service!"
                     </p>
                   </div>
 
@@ -626,7 +772,7 @@ function ProductDetailContent({
                       <span className="pdp-review-stars">★★★★★</span>
                     </div>
                     <p className="pdp-review-text">
-                      "Top quality build. Usually toys ordered online feel flimsy, but this freight truck has solid ABS plastic and authentic rubber tires. Opening container doors are a great touch."
+                      "Top quality build. Exactly as shown and described with great attention to detail. 100% genuine and securely packaged."
                     </p>
                   </div>
 
@@ -678,7 +824,14 @@ function ProductDetailContent({
             <img src={images[0]} alt={product.name} className="pdp-sticky-img" />
             <div>
               <div className="pdp-sticky-title">{product.name}</div>
-              <div className="pdp-sticky-price">{money(product.price)}</div>
+              <div className="pdp-sticky-price">
+                {money(product.price)}
+                {selectedColor && (
+                  <span style={{ fontSize: "11px", color: "#64748b", marginLeft: "6px", fontWeight: 600 }}>
+                    • {selectedColor}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 

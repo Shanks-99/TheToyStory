@@ -937,36 +937,46 @@ button:disabled {
 
 .product-art {
   position: relative;
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  place-items: center;
-  min-height: 220px;
+  height: 260px;
+  min-height: 260px;
   overflow: hidden;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.product-art::before {
-  position: absolute;
-  right: -25px;
-  bottom: -48px;
-  width: 160px;
-  height: 160px;
-  border: 24px solid rgba(255, 255, 255, .32);
-  border-radius: 50%;
-  content: "";
+.product-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1);
 }
+
+.product-card:hover .product-art img {
+  transform: scale(1.06);
+}
+
+
 
 .product-label {
   position: absolute;
   top: 14px;
   left: 14px;
   z-index: 2;
-  padding: 7px 9px;
+  padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, .84);
-  color: #5a6377;
-  font-size: 8px;
+  background: linear-gradient(135deg, #ffd027 0%, #ffb800 100%);
+  color: #451a03;
+  font-size: 9px;
   font-weight: 900;
   letter-spacing: .65px;
+  box-shadow: 0 3px 10px rgba(255, 184, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .favorite-button {
@@ -1009,13 +1019,7 @@ button:disabled {
   transform: translateY(-5px) scale(1.08) rotate(-4deg);
 }
 
-.product-art-sparkle {
-  position: absolute;
-  right: 24px;
-  bottom: 20px;
-  color: rgba(255, 255, 255, .9);
-  font-size: 27px;
-}
+
 
 .product-info {
   display: flex;
@@ -1046,18 +1050,24 @@ button:disabled {
 }
 
 .product-info>p {
-  min-height: 3.2em;
   margin: 9px 0 15px;
   color: var(--toy-muted);
   font-size: 12px;
-  line-height: 1.7;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 3.2em;
+  max-height: 3.2em;
 }
 
 .product-bottom {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 9px;
+  gap: 12px;
   margin-top: auto;
   padding-top: 14px;
   border-top: 1px solid #f0f1f5;
@@ -1066,22 +1076,31 @@ button:disabled {
 .product-bottom>div {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
   min-width: 0;
 }
 
 .product-price {
   color: #237b56;
-  font-size: 17px;
+  font-size: 17.5px;
   font-weight: 900;
   letter-spacing: -.4px;
   white-space: nowrap;
 }
 
-.product-age {
-  color: #81879a;
-  font-size: 10px;
-  line-height: 1.5;
+.product-age-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef08a 100%);
+  color: #854d0e;
+  font-size: 10.5px;
+  font-weight: 800;
+  border: 1.5px solid #facc15;
+  box-shadow: 0 1px 4px rgba(250, 204, 21, 0.25);
+  width: fit-content;
+  letter-spacing: 0.2px;
 }
 
 .product-button {
@@ -1091,15 +1110,15 @@ button:disabled {
   justify-content: center;
   gap: 5px;
   min-height: 38px;
-  padding: 9px 12px;
+  padding: 9px 14px;
   border: 1px solid var(--toy-ink);
   border-radius: 11px;
   background: var(--toy-ink);
   color: white;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 900;
   cursor: pointer;
-  transition: background .2s ease, color .2s ease, transform .2s ease;
+  transition: all .25s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .product-button span {
@@ -1107,9 +1126,19 @@ button:disabled {
 }
 
 .product-button:hover {
-  transform: translateY(-2px);
-  background: var(--toy-yellow);
-  color: var(--toy-ink);
+  transform: translateY(-2px) scale(1.03);
+  background: #ffd027;
+  color: #451a03;
+  border-color: #ffd027;
+  box-shadow: 0 4px 14px rgba(255, 208, 39, 0.35);
+}
+
+.product-button.is-added {
+  background: #16a34a !important;
+  color: white !important;
+  border-color: #16a34a !important;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  animation: cat-btn-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .empty-search {
@@ -2063,11 +2092,7 @@ button:disabled {
     font-size: 59px;
   }
 
-  .product-art-sparkle {
-    right: 12px;
-    bottom: 11px;
-    font-size: 19px;
-  }
+
 
   .product-info {
     padding: 13px 11px;
@@ -2085,10 +2110,16 @@ button:disabled {
   }
 
   .product-info>p {
-    min-height: 4.4em;
     margin: 7px 0 11px;
     font-size: 10px;
-    line-height: 1.6;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 3em;
+    max-height: 3em;
   }
 
   .product-bottom {
