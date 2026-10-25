@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import HomeClient, { Product } from "./HomeClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   let initialProducts: Product[] = [];
 

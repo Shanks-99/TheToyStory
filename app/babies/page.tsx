@@ -2,7 +2,7 @@ import CategoryPageLayout from "../CategoryPageLayout";
 import type { CatProduct, CatTheme } from "../CategoryPageLayout";
 import { supabase } from "@/lib/supabase";
 
-
+export const dynamic = "force-dynamic";
 /* ── Yellow / warm theme ── */
 const theme: CatTheme = {
   primary: "#d4a017",

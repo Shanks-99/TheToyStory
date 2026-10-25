@@ -3,7 +3,7 @@ import { getAdminUser } from "@/lib/admin-auth";
 import AdminSidebar from "../components/AdminSidebar";
 import AccessDenied from "../components/AccessDenied";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardLayout({
   children,
