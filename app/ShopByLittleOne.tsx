@@ -66,6 +66,7 @@ export default function ShopByLittleOne() {
             className="sblo__card"
             style={
               {
+                textDecoration: "none",
                 "--card-accent": card.accent,
                 "--card-border": card.border,
                 "--card-bg": card.bg,
