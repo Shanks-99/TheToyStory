@@ -38,16 +38,20 @@
   gap: 10px;
   text-decoration: none;
   font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: -0.01em;
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #0f172a;
 }
 
 .pdp-nav__brand img {
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
+  display: block;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
   border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(255, 184, 0, 0.4);
 }
 
 .pdp-nav__links {
@@ -1117,6 +1121,105 @@
 
 .pdp-tab-content {
   padding-top: 24px;
+}
+
+/* Formatted Description & Points */
+.pdp-formatted-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pdp-desc-paragraph {
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: #334155;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.pdp-desc-features-wrap {
+  margin-top: 8px;
+}
+
+.pdp-desc-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 18px 0 14px;
+}
+
+.pdp-desc-section-icon {
+  font-size: 1.15rem;
+}
+
+.pdp-desc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pdp-desc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #eef2f6;
+  padding: 14px 16px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.pdp-desc-item:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.pdp-desc-bullet-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #e6fcf5;
+  color: #059669;
+  font-weight: 800;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pdp-desc-text-wrap {
+  font-size: 0.95rem;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.pdp-desc-item-title {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .pdp-desc-paragraph {
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+  .pdp-desc-item {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .pdp-desc-text-wrap {
+    font-size: 0.9rem;
+  }
 }
 
 /* Features List */

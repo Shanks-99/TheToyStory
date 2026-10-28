@@ -75,22 +75,27 @@
 .checkout-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 32px;
   text-decoration: none;
 }
 
 .checkout-brand img {
-  height: 42px;
-  width: auto;
-  object-fit: contain;
+  display: block;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(255, 184, 0, 0.4);
 }
 
 .checkout-brand span {
-  font-size: 20px;
+  font-size: 0.95rem;
   font-weight: 800;
   color: #111827;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 /* Section Common Styles */

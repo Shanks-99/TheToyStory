@@ -32,15 +32,20 @@
   gap: 10px;
   text-decoration: none;
   color: var(--toy-ink);
-  font-weight: 900;
-  font-size: 15px;
-  letter-spacing: 1px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .cat-nav__brand img {
-  width: 32px;
-  height: 32px;
+  display: block;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
   border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(255, 184, 0, 0.4);
 }
 
 .cat-nav__links {

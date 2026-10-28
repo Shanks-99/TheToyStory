@@ -14,6 +14,123 @@ const money = (amount: number) =>
 const discountPercent = (orig: number, sale: number) =>
   Math.round(((orig - sale) / orig) * 100);
 
+function renderFormattedDescription(raw: string, productName?: string) {
+  if (!raw) return null;
+
+  // Split into lines/paragraphs while preserving non-empty blocks
+  const blocks = raw
+    .split(/\r?\n+/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+
+  // If first line is just the product name repeated, skip it
+  let startIndex = 0;
+  if (
+    blocks.length > 0 &&
+    productName &&
+    blocks[0].toLowerCase().trim() === productName.toLowerCase().trim()
+  ) {
+    startIndex = 1;
+  }
+
+  const items = blocks.slice(startIndex);
+
+  // Group into paragraphs and feature points
+  const elements: React.ReactNode[] = [];
+  let currentList: { title?: string; text: string }[] = [];
+  let currentHeader: string | null = null;
+
+  const flushList = (keyPrefix: string) => {
+    if (currentList.length > 0) {
+      elements.push(
+        <div key={`${keyPrefix}-group`} className="pdp-desc-features-wrap">
+          {currentHeader && (
+            <h4 className="pdp-desc-section-title">
+              <span className="pdp-desc-section-icon">✨</span>
+              <span>{currentHeader}</span>
+            </h4>
+          )}
+          <ul className="pdp-desc-list">
+            {currentList.map((pt, idx) => (
+              <li key={idx} className="pdp-desc-item">
+                <span className="pdp-desc-bullet-icon">✓</span>
+                <div className="pdp-desc-text-wrap">
+                  {pt.title ? (
+                    <>
+                      <strong className="pdp-desc-item-title">{pt.title}: </strong>
+                      <span>{pt.text}</span>
+                    </>
+                  ) : (
+                    <span>{pt.text}</span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+      currentList = [];
+      currentHeader = null;
+    }
+  };
+
+  for (let i = 0; i < items.length; i++) {
+    const line = items[i];
+
+    // Check if line is a section heading (e.g. "Key Features:", "Highlights:", "Package Includes:")
+    const isHeading =
+      /^(key\s+features|features|highlights|product\s+highlights|specifications|package\s+includes|included|details):?$/i.test(
+        line
+      ) ||
+      (/^[A-Z][A-Za-z0-9\s&]{2,30}:$/.test(line) && !line.includes("."));
+
+    if (isHeading) {
+      flushList(`list-${i}`);
+      currentHeader = line.replace(/:$/, "").trim();
+      continue;
+    }
+
+    // Check if line is a bullet point or key-value feature:
+    // 1) Starts with bullet symbol: -, •, *, ✓, +, or 1., 2.
+    const bulletMatch =
+      line.match(/^[-*•✓+–—]\s*(.*)$/) || line.match(/^\d+[\.\)]\s*(.*)$/);
+    // 2) Has format "Feature Title: Feature Description" (title <= 45 chars)
+    const colonMatch = line.match(/^([^:\n]{2,45}):\s+(.+)$/);
+
+    if (bulletMatch) {
+      const content = bulletMatch[1];
+      const innerColon = content.match(/^([^:\n]{2,45}):\s+(.+)$/);
+      if (innerColon) {
+        currentList.push({
+          title: innerColon[1].trim(),
+          text: innerColon[2].trim(),
+        });
+      } else {
+        currentList.push({ text: content.trim() });
+      }
+    } else if (colonMatch && (currentHeader !== null || colonMatch[1].length <= 35)) {
+      currentList.push({
+        title: colonMatch[1].trim(),
+        text: colonMatch[2].trim(),
+      });
+    } else if (currentHeader !== null) {
+      // Inside a features section, treat subsequent lines as points
+      currentList.push({ text: line });
+    } else {
+      flushList(`list-${i}`);
+      elements.push(
+        <p key={`p-${i}`} className="pdp-desc-paragraph">
+          {line}
+        </p>
+      );
+    }
+  }
+
+  flushList("list-final");
+
+  return <div className="pdp-formatted-desc">{elements}</div>;
+}
+
 function ProductDetailContent({
   params,
 }: {
@@ -702,21 +819,34 @@ function ProductDetailContent({
           <div className="pdp-tab-content">
             {activeTab === "overview" && (
               <div>
-                <p style={{ fontSize: "1.02rem", lineHeight: 1.7, color: "#334155" }}>
-                  {product.description}
-                </p>
+                {renderFormattedDescription(product?.description, product?.name)}
 
-                <h4 style={{ margin: "24px 0 10px", fontSize: "1.1rem", fontWeight: 800 }}>
-                  ✨ Key Highlights & Built-in Features
-                </h4>
-                <ul className="pdp-features-list">
-                  {product?.features && (product.features as any[]).map((feat: any, idx: number) => (
-                    <li key={idx}>
-                      <span className="pdp-feature-icon">✓</span>
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
+                {/* Generic highlights shown if description doesn't already provide feature points */}
+                {(!product?.description ||
+                  !product.description.toLowerCase().includes("feature")) && (
+                  <>
+                    <h4
+                      style={{
+                        margin: "24px 0 10px",
+                        fontSize: "1.1rem",
+                        fontWeight: 800,
+                      }}
+                    >
+                      ✨ Key Highlights & Built-in Features
+                    </h4>
+                    <ul className="pdp-features-list">
+                      {product?.features &&
+                        (product.features as any[]).map(
+                          (feat: any, idx: number) => (
+                            <li key={idx}>
+                              <span className="pdp-feature-icon">✓</span>
+                              <span>{feat}</span>
+                            </li>
+                          )
+                        )}
+                    </ul>
+                  </>
+                )}
               </div>
             )}
 

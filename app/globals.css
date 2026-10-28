@@ -1365,6 +1365,19 @@ button:disabled {
   font-size: 25px;
 }
 
+.footer-brand img {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(255, 184, 0, 0.4);
+  transition: transform .25s ease;
+}
+
+.footer-brand:hover img {
+  transform: rotate(8deg) scale(1.06);
+}
+
 .footer-tagline {
   margin: 13px 0 24px;
   color: var(--toy-muted);

@@ -373,17 +373,71 @@ export default function ProductForm({ initialData }: ProductFormProps) {
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="prod-desc">
-                Description
-              </label>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "8px",
+                  flexWrap: "wrap",
+                  gap: "6px",
+                }}
+              >
+                <label className="form-label" htmlFor="prod-desc" style={{ marginBottom: 0 }}>
+                  Description & Key Features
+                </label>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const prefix = description && !description.endsWith("\n") ? "\n\n" : "";
+                      setDescription((prev) => prev + `${prefix}Key Features:\n`);
+                    }}
+                    style={{
+                      background: "#f1f5f9",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: "6px",
+                      padding: "4px 9px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      color: "#334155",
+                    }}
+                  >
+                    + Key Features Header
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const prefix = description && !description.endsWith("\n") ? "\n" : "";
+                      setDescription((prev) => prev + `${prefix}• Feature Name: Feature description details here\n`);
+                    }}
+                    style={{
+                      background: "#f1f5f9",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: "6px",
+                      padding: "4px 9px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      color: "#334155",
+                    }}
+                  >
+                    + Add Bullet Point
+                  </button>
+                </div>
+              </div>
               <textarea
                 id="prod-desc"
-                rows={5}
+                rows={8}
                 className="form-textarea"
-                placeholder="Provide a vivid description of features, play value, materials, and excitement..."
+                placeholder="Provide product description and features (e.g. intro paragraph, then 'Key Features:' followed by 'Feature Name: Details')..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+              <div className="form-hint" style={{ marginTop: "6px", fontSize: "12px", color: "#64748b" }}>
+                💡 <strong>Point form supported:</strong> Type an intro paragraph, then add features on new lines (e.g. <code>Key Features:</code> followed by <code>Feature: Details</code> or using <code>•</code> / <code>-</code>). They will automatically render as feature point cards on the product page.
+              </div>
             </div>
           </div>
 

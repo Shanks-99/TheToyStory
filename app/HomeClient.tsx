@@ -809,7 +809,13 @@ export default function HomeClient({
 
       <footer className="site-footer">
         <a className="brand footer-brand" href="#home">
-          <span className="brand-icon">✦</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt="The Toy Story"
+            width={36}
+            height={36}
+          />
           <span>The Toy Story</span>
         </a>
         <p className="footer-tagline">Making room for more wonder, one toy at a time.</p>
